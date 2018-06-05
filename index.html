@@ -1,31 +1,30 @@
 <html lang="ru"><head>
   <meta charset="UTF-8">
   <title>Проверка видео</title>
-  <script src="https://cdn.temasys.com.sg/skylink/skylinkjs/latest/skylink.complete.js"></script>
+  <script src="skylink.complete.js"></script>
   <script src="index.js"></script>
   <!-- CSS -->
   <link rel="stylesheet" href="index.css">
-  <style>
-    body { padding-top:50px; }
-  </style>
-</head><iframe src="https://cdn.temasys.com.sg/skylink/extensions/detectRTC.html" style="display: none;"></iframe>
+</head>
+<iframe src="https://cdn.temasys.com.sg/skylink/extensions/detectRTC.html" style="display: none;"></iframe>
 <body cz-shortcut-listen="true">
-  
   <div>
     <h1>Проверка видео</h1>
-    <video id="local" autoplay="autoplay" muted="" width="300" height="150"></video> <video id="remote" autoplay="autoplay" muted="" width="300" height="150"></video>
+    <div class="title">Local</div>
+    <div class="title">Remote</div>
+    <video id="local" autoplay="autoplay" muted="" width="300" height="150"></video>
+    <video id="remote" autoplay="autoplay" muted="" width="300" height="150"></video>
   </div>
   <div>
     <button onclick="disconnect()">
       Отключиться
     </button>
-    <button onclick="reconnect()">
+    <button onclick="reinit()">
       Переподключиться
     </button>
     <button onclick="destroy()">
       Сломать видеосвязь
     </button>
   </div>
-
-
-</body></html>
+</body>
+</html>
