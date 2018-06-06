@@ -1,9 +1,39 @@
 
 let checking = false;
 let skylinkB = null;
-let checkPeersInterval = null;
-
 init();
+setInterval(() => {
+  reinit();
+  setTimeout(() => {
+    const status = {
+      "environment": "B",
+      "testTime": Date.now()
+    };
+    const currentPeers = skylinkB.getPeersStream();
+    console.log(currentPeers);
+    if (currentPeers && Object.keys(currentPeers).length > 1) {
+      //success request
+      const peerId = Object.keys(currentPeers)[0];
+      skylinkB.getConnectionStatus((error, data) => {
+        console.log(error, data);
+        if (error) {
+          status.video = false;
+          status.audio = false;
+          status.errorMessage = error.connectionStats;
+        } else {
+          status.video = !!data.connectionStats[peerId].video.sending.bytes;
+          status.audio = !!data.connectionStats[peerId].audio.sending.bytes;
+        }
+        sendServerRequest(status);
+      })
+    } else {
+      status.video = false;
+      status.audio = false;
+      status.errorMessage = 'no peers';
+      sendServerRequest(status);
+    }
+  }, 3000)
+}, 30000);
 
 function init() {
   skylinkB = new Skylink();
@@ -13,32 +43,6 @@ function init() {
   }, function () {
     skylinkB.joinRoom({ audio: true, video: true });
   });
-
-  if (checkPeersInterval) {
-    clearInterval(checkPeersInterval);
-  }
-  checkPeersInterval = setInterval(() => {
-    const currentPeers = skylinkB.getPeersStream();
-    console.log(currentPeers);
-    if (currentPeers && currentPeers.length > 1) {
-      //success request
-      const status = {
-        "environment": "B",
-        "video": true,
-        "audio": true,
-        "testTime": Date.now()
-      };
-      sendServerRequest(status);
-    } else {
-      const status = {
-        "environment": "B",
-        "video": false,
-        "audio": false,
-        "testTime": Date.now()
-      };
-      sendServerRequest(status);
-    }
-  }, 30000);
 
   skylinkB.on('incomingStream', function (peerId, stream, isSelf) {
     console.log('incomingStream', peerId, stream);

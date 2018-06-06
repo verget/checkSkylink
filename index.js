@@ -1,9 +1,39 @@
 
 let checking = false;
 let skylinkA = null;
-let checkPeersInterval = null;
-
 init();
+setInterval(() => {
+  reinit();
+  setTimeout(() => {
+    const status = {
+      "environment": "A",
+      "testTime": Date.now()
+    };
+    const currentPeers = skylinkA.getPeersStream();
+    console.log(currentPeers);
+    if (currentPeers && Object.keys(currentPeers).length > 1) {
+      //success request
+      const peerId = Object.keys(currentPeers)[0];
+      skylinkA.getConnectionStatus((error, data) => {
+        console.log(error, data);
+        if (error) {
+          status.video = false;
+          status.audio = false;
+          status.errorMessage = error.connectionStats;
+        } else {
+          status.video = !!data.connectionStats[peerId].video.sending.bytes;
+          status.audio = !!data.connectionStats[peerId].audio.sending.bytes;
+        }
+        sendServerRequest(status);
+      })
+    } else {
+      status.video = false;
+      status.audio = false;
+      status.errorMessage = 'no peers';
+      sendServerRequest(status);
+    }
+  }, 5000)
+}, 30000);
 
 function init() {
   skylinkA = new Skylink();
@@ -13,32 +43,6 @@ function init() {
   }, function () {
     skylinkA.joinRoom({ audio: true, video: true });
   });
-
-  if (checkPeersInterval) {
-    clearInterval(checkPeersInterval);
-  }
-  checkPeersInterval = setInterval(() => {
-    const currentPeers = skylinkA.getPeersStream();
-    console.log(currentPeers);
-    if (currentPeers && currentPeers.length > 1) {
-      //success request
-      const status = {
-        "environment": "A",
-        "video": true,
-        "audio": true,
-        "testTime": Date.now()
-      };
-      sendServerRequest(status);
-    } else {
-      const status = {
-        "environment": "A",
-        "video": false,
-        "audio": false,
-        "testTime": Date.now()
-      };
-      sendServerRequest(status);
-    }
-  }, 30000);
 
   skylinkA.on('incomingStream', function (peerId, stream, isSelf) {
     console.log('incomingStream', peerId, stream);
@@ -117,7 +121,9 @@ function reinit() {
 }
 
 function destroy() {
-  skylinkA.leaveRoom();
-  skylinkA.off();
-  skylinkA = null;
+  if (skylinkA) {
+    skylinkA.leaveRoom();
+    skylinkA.off();
+    skylinkA = null;
+  }
 }
