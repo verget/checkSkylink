@@ -1,6 +1,7 @@
 
 let checking = false;
 let skylinkA = null;
+
 init();
 setInterval(() => {
   reinit();
@@ -72,17 +73,20 @@ function init() {
 }
 
 function sendServerRequest(data) {
-  const binaryData = stringToBinary(JSON.stringify(data));
-  console.log(binaryData);
-  fetch('http://52.15.204.247:9091/metrics/job/skylink/instance/frontend', {
-    method: 'POST',
-    body: binaryData
-  }).then(function (response) {
-    return response.json();
-  }).catch(err => {
-    console.error(err);
-  });
-  return false;
+  
+  prometheusAggregator('increment', 'videos_is_on', {  browser: 'chrome', feature: 'client_ip' }, 1);
+  
+  // const binaryData = stringToBinary(JSON.stringify(data));
+  // console.log(binaryData);
+  // fetch('http://52.15.204.247:9091/metrics/job/skylink/instance/frontend', {
+  //   method: 'POST',
+  //   body: binaryData
+  // }).then(function (response) {
+  //   return response.json();
+  // }).catch(err => {
+  //   console.error(err);
+  // });
+  // return false;
 }
 
 function stringToBinary(str) {
