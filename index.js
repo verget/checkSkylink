@@ -3,37 +3,42 @@ let checking = false;
 let skylinkA = null;
 
 init();
+
 setInterval(() => {
   reinit();
   setTimeout(() => {
-    const status = {
-      "environment": "A",
-      "testTime": Date.now()
-    };
+    // const status = {
+    //   "environment": "A",
+    //   "testTime": Date.now()
+    // };
+    let isWorking = false;
     const currentPeers = skylinkA.getPeersStream();
     console.log(currentPeers);
     if (currentPeers && Object.keys(currentPeers).length > 1) {
-      //success request
       const peerId = Object.keys(currentPeers)[0];
       skylinkA.getConnectionStatus((error, data) => {
         console.log(error, data);
         if (error) {
-          status.video = false;
-          status.audio = false;
-          status.errorMessage = error.connectionStats;
+          // status.video = false;
+          // status.audio = false;
+          // status.errorMessage = error.connectionStats;
+          isWorking = false;
         } else {
-          status.video = !!data.connectionStats[peerId].video.sending.bytes;
-          status.audio = !!data.connectionStats[peerId].audio.sending.bytes;
+          // status.video = !!data.connectionStats[peerId].video.sending.bytes;
+          // status.audio = !!data.connectionStats[peerId].audio.sending.bytes;
+          isWorking = !!data.connectionStats[peerId].video.sending.bytes;
         }
-        sendServerRequest(status);
+        sendServerRequest(isWorking);
       })
     } else {
-      status.video = false;
-      status.audio = false;
-      status.errorMessage = 'no peers';
-      sendServerRequest(status);
+      // status.video = false;
+      // status.audio = false;
+      // status.errorMessage = 'no peers';
+
+      isWorking = false;
+      sendServerRequest(isWorking);
     }
-  }, 5000)
+  }, 10000);
 }, 30000);
 
 function init() {
@@ -72,9 +77,14 @@ function init() {
   });
 }
 
-function sendServerRequest(data) {
-  
-  prometheusAggregator('increment', 'videos_is_on', {  browser: 'chrome', feature: 'client_ip' }, 1);
+function sendServerRequest(flag) {
+  console.log("Send video is " + flag);
+  if (flag) {
+    prometheusAggregator('increment', 'videos_is_on', {  browser: 'chrome', feature: 'client_ip' }, 1);
+  } else {
+    prometheusAggregator('increment', 'videos_is_off', {  browser: 'chrome', feature: 'client_ip' }, 1);
+  }
+
   
   // const binaryData = stringToBinary(JSON.stringify(data));
   // console.log(binaryData);
