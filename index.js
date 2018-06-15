@@ -1,6 +1,6 @@
 
 let checking = false;
-let skylinkA = null;
+let skylink = null;
 
 init();
 
@@ -12,11 +12,11 @@ setInterval(() => {
     //   "testTime": Date.now()
     // };
     let isWorking = false;
-    const currentPeers = skylinkA.getPeersStream();
+    const currentPeers = skylink.getPeersStream();
     console.log(currentPeers);
     if (currentPeers && Object.keys(currentPeers).length > 1) {
       const peerId = Object.keys(currentPeers)[0];
-      skylinkA.getConnectionStatus((error, data) => {
+      skylink.getConnectionStatus((error, data) => {
         console.log(error, data);
         if (error) {
           // status.video = false;
@@ -42,36 +42,36 @@ setInterval(() => {
 }, 30000);
 
 function init() {
-  skylinkA = new Skylink();
-  skylinkA.init({
+  skylink = new Skylink();
+  skylink.init({
     apiKey: '9aaa8a58-c193-4569-bdba-940e5e9f3d31',
     defaultRoom: 'testingRoom'
   }, function () {
-    skylinkA.joinRoom({ audio: true, video: true });
+    skylink.joinRoom({ audio: true, video: true });
   });
 
-  skylinkA.on('incomingStream', function (peerId, stream, isSelf) {
+  skylink.on('incomingStream', function (peerId, stream, isSelf) {
     console.log('incomingStream', peerId, stream);
     if (isSelf) return;
     attachMediaStream(document.getElementById('remote'), stream);
   });
 
-  skylinkA.on('mediaAccessSuccess', function (stream) {
+  skylink.on('mediaAccessSuccess', function (stream) {
     attachMediaStream(document.getElementById('local'), stream);
   });
 
-  skylinkA.on('peerJoined', function (peerId, peerInfo, isSelf) {
+  skylink.on('peerJoined', function (peerId, peerInfo, isSelf) {
     if (isSelf) return;
     console.log(peerId + ' joined!');
   });
 
-  skylinkA.on('peerLeft', function (peerId, peerInfo, isSelf) {
+  skylink.on('peerLeft', function (peerId, peerInfo, isSelf) {
     if (isSelf) return;
     console.log(peerId + ' left!');
     //checkPeerConnection();
   });
 
-  skylinkA.on("channelClose", function () {
+  skylink.on("channelClose", function () {
     console.log('channelClosed');
     //checkPeerConnection();
   });
@@ -84,24 +84,6 @@ function sendServerRequest(flag) {
   } else {
     prometheusAggregator('increment', 'videos_is_off', {  browser: 'chrome', feature: 'client_ip' }, 1);
   }
-
-  
-  // const binaryData = stringToBinary(JSON.stringify(data));
-  // console.log(binaryData);
-  // fetch('http://52.15.204.247:9091/metrics/job/skylink/instance/frontend', {
-  //   method: 'POST',
-  //   body: binaryData
-  // }).then(function (response) {
-  //   return response.json();
-  // }).catch(err => {
-  //   console.error(err);
-  // });
-  // return false;
-}
-
-function stringToBinary(str) {
-  return new Uint8Array(str.split('')
-    .map(c => c.charCodeAt(0))).buffer;
 }
 
 function sendTGMessage(message) {
@@ -115,17 +97,17 @@ function sendTGMessage(message) {
 }
 
 function disconnect() {
-  if (skylinkA) {
-    skylinkA.leaveRoom();
+  if (skylink) {
+    skylink.leaveRoom();
   }
 }
 
 function reconnect() {
-  skylinkA.init({
+  skylink.init({
     apiKey: '9aaa8a58-c193-4569-bdba-940e5e9f3d31',
     defaultRoom: 'testingRoom'
   }, function () {
-    skylinkA.joinRoom({ audio: true, video: true })
+    skylink.joinRoom({ audio: true, video: true })
   });
 }
 
@@ -135,9 +117,9 @@ function reinit() {
 }
 
 function destroy() {
-  if (skylinkA) {
-    skylinkA.leaveRoom();
-    skylinkA.off();
-    skylinkA = null;
+  if (skylink) {
+    skylink.leaveRoom();
+    skylink.off();
+    skylink = null;
   }
 }
