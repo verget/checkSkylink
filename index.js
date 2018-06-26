@@ -1,5 +1,3 @@
-
-let checking = false;
 let skylink = null;
 
 init();
@@ -19,22 +17,13 @@ setInterval(() => {
       skylink.getConnectionStatus((error, data) => {
         console.log(error, data);
         if (error) {
-          // status.video = false;
-          // status.audio = false;
-          // status.errorMessage = error.connectionStats;
           isWorking = false;
         } else {
-          // status.video = !!data.connectionStats[peerId].video.sending.bytes;
-          // status.audio = !!data.connectionStats[peerId].audio.sending.bytes;
           isWorking = !!data.connectionStats[peerId].video.sending.bytes;
         }
         sendServerRequest(isWorking);
       })
     } else {
-      // status.video = false;
-      // status.audio = false;
-      // status.errorMessage = 'no peers';
-
       isWorking = false;
       sendServerRequest(isWorking);
     }
@@ -53,11 +42,21 @@ function init() {
   skylink.on('incomingStream', function (peerId, stream, isSelf) {
     console.log('incomingStream', peerId, stream);
     if (isSelf) return;
-    attachMediaStream(document.getElementById('remote'), stream);
+    const remote = document.getElementById('remote');
+    if (remote.srcObject) {
+      reattachMediaStream(document.getElementById('remote'), stream);
+    } else {
+      attachMediaStream(document.getElementById('remote'), stream);
+    }
   });
 
   skylink.on('mediaAccessSuccess', function (stream) {
-    attachMediaStream(document.getElementById('local'), stream);
+    const local = document.getElementById('local');
+    if (local.srcObject) {
+      reattachMediaStream(document.getElementById('local'), stream);
+    } else {
+      attachMediaStream(document.getElementById('local'), stream);
+    }
   });
 
   skylink.on('peerJoined', function (peerId, peerInfo, isSelf) {
@@ -68,12 +67,10 @@ function init() {
   skylink.on('peerLeft', function (peerId, peerInfo, isSelf) {
     if (isSelf) return;
     console.log(peerId + ' left!');
-    //checkPeerConnection();
   });
 
   skylink.on("channelClose", function () {
     console.log('channelClosed');
-    //checkPeerConnection();
   });
 }
 
@@ -93,21 +90,6 @@ function sendTGMessage(message) {
       return response.json();
     }).catch(err => {
     console.error(err);
-  });
-}
-
-function disconnect() {
-  if (skylink) {
-    skylink.leaveRoom();
-  }
-}
-
-function reconnect() {
-  skylink.init({
-    apiKey: '9aaa8a58-c193-4569-bdba-940e5e9f3d31',
-    defaultRoom: 'testingRoom'
-  }, function () {
-    skylink.joinRoom({ audio: true, video: true })
   });
 }
 
